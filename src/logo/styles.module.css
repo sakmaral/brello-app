@@ -1,0 +1,15 @@
+.root {
+  display: flex;
+  align-items: center;
+}
+
+.logomark {
+  width: 38px;
+  height: 38px;
+  margin-right: 10px;
+}
+
+.text {
+  color: var(--color-base-black);
+  font: var(--font-text-lg-bold);
+}
