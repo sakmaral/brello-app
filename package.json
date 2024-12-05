@@ -11,7 +11,9 @@
     "preinstall": "corepack enable && npx only-allow pnpm",
     "prepare": "husky || true",
     "lint-staged": "lint-staged",
-    "format": "prettier --write '.'"
+    "format": "prettier --write '.'",
+    "format:check": "prettier --check '.'",
+    "check": "pnpm run lint && pnpm run format:check"
   },
   "dependencies": {
     "@mantine/core": "^7.14.3",
