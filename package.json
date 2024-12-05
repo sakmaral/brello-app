@@ -16,6 +16,7 @@
     "check": "pnpm run lint && pnpm run format:check"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.1.0",
     "@mantine/core": "^7.14.3",
     "@mantine/dates": "^7.14.3",
     "@mantine/dropzone": "^7.14.3",
@@ -28,7 +29,9 @@
     "@tiptap/extension-link": "^2.10.3",
     "@tiptap/react": "^2.10.3",
     "@tiptap/starter-kit": "^2.10.3",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
+    "modern-normalize": "^3.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
