@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { PropsWithChildren, useState } from "react";
 
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
 import cn from "clsx";
@@ -140,6 +140,18 @@ const Board = () => {
     }
   };
 
+  const onCreateCard = (card: KanbanCard, columnId: string) => {
+    const updatedBoard = board.map((column) => {
+      if (column.id === columnId) {
+        return { ...column, cards: [...column.cards, card] };
+      }
+
+      return column;
+    });
+
+    setBoard(updatedBoard);
+  };
+
   return (
     <section className={cn(containerStyles, styles.section)}>
       <header className={styles.headerSection}>
@@ -148,7 +160,9 @@ const Board = () => {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className={cn(styles.board, customScrollStyles)}>
           {board.map((column) => (
-            <KanbanColumn key={column.id} id={column.id} title={column.title} cards={column.cards} />
+            <KanbanColumn key={column.id} id={column.id} title={column.title} cards={column.cards}>
+              <KanbanCreateCard onCreate={(card) => onCreateCard(card, column.id)} />
+            </KanbanColumn>
           ))}
         </div>
       </DragDropContext>
@@ -156,7 +170,12 @@ const Board = () => {
   );
 };
 
-const KanbanColumn = ({ id, title, cards }: { id: string; title: string; cards: KanbanCard[] }) => {
+const KanbanColumn = ({
+  id,
+  title,
+  cards,
+  children,
+}: PropsWithChildren & { id: string; title: string; cards: KanbanCard[] }) => {
   return (
     <Droppable key={id} droppableId={id}>
       {(provided) => (
@@ -167,10 +186,7 @@ const KanbanColumn = ({ id, title, cards }: { id: string; title: string; cards: 
               <KanbanCard key={id} id={id} index={index} title={title} />
             ))}
             {provided.placeholder}
-            <form className={styles.form}>
-              <Textarea onValue={() => {}} placeholder="Start making new card here" />
-              <Button>Add card</Button>
-            </form>
+            {children}
           </div>
         </div>
       )}
@@ -192,5 +208,26 @@ const KanbanCard = ({ id, index, title }: { id: string; index: number; title: st
         </div>
       )}
     </Draggable>
+  );
+};
+
+const KanbanCreateCard = ({ onCreate }: { onCreate: (card: KanbanCard) => void }) => {
+  const [title, setTitle] = useState("");
+
+  function onReset() {
+    setTitle("");
+  }
+
+  function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    onCreate({ id: crypto.randomUUID(), title });
+    onReset();
+  }
+
+  return (
+    <form className={styles.form} onSubmit={onSubmit}>
+      <Textarea variant="md" value={title} onValue={setTitle} placeholder="Start making new card here" />
+      <Button type="submit">Add card</Button>
+    </form>
   );
 };
