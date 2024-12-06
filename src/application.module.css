@@ -38,10 +38,11 @@
   font: var(--font-display-sm-semibold);
 }
 
-.grid {
+.board {
   display: flex;
   flex-direction: row;
   gap: 16px;
+  padding-inline: 16px;
   overflow-x: auto; /* Добавляем горизонтальный скролл */
   padding-bottom: 16px; /* Небольшой отступ снизу для удобства прокрутки */
 }
@@ -83,6 +84,11 @@
   border: 1px solid var(--color-gray-200, #eaecf0);
   background: var(--color-base-white, #fff);
   width: 100%;
+  margin-bottom: 16px;
+}
+
+.item.dragging {
+  box-shadow: 0 2px 8px 0 rgba(16, 24, 40, 0.05);
 }
 
 .item-text {
