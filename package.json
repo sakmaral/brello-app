@@ -32,7 +32,10 @@
     "@tiptap/starter-kit": "^2.10.3",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
+    "effector": "^23.2.3",
+    "effector-react": "^23.2.1",
     "modern-normalize": "^3.0.1",
+    "patronum": "^2.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
