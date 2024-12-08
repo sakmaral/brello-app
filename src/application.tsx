@@ -1,6 +1,8 @@
 import { PropsWithChildren, useState } from "react";
 
 import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
+import { ActionIcon, Group } from "@mantine/core";
+import { IconCheck, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import cn from "clsx";
 
 import styles from "./application.module.css";
@@ -152,15 +154,26 @@ const Board = () => {
     setBoard(updatedBoard);
   };
 
+  function onColumnUpdate(updatedList: KanbanList) {
+    const updatedBoard = board.map((column) => (column.id === updatedList.id ? updatedList : column));
+    setBoard(updatedBoard);
+  }
+
   return (
-    <section className={cn(containerStyles, styles.section)}>
+    <section className={cn(styles.section)}>
       <header className={styles.headerSection}>
         <h1 className={styles.title}>Sprint #1</h1>
       </header>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className={cn(styles.board, customScrollStyles)}>
           {board.map((column) => (
-            <KanbanColumn key={column.id} id={column.id} title={column.title} cards={column.cards}>
+            <KanbanColumn
+              key={column.id}
+              id={column.id}
+              title={column.title}
+              cards={column.cards}
+              onUpdate={onColumnUpdate}
+            >
               <KanbanCreateCard onCreate={(card) => onCreateCard(card, column.id)} />
             </KanbanColumn>
           ))}
@@ -175,7 +188,23 @@ const KanbanColumn = ({
   title,
   cards,
   children,
-}: PropsWithChildren & { id: string; title: string; cards: KanbanCard[] }) => {
+  onUpdate,
+}: PropsWithChildren & {
+  id: string;
+  title: string;
+  cards: KanbanCard[];
+  onUpdate: (updatedList: KanbanList) => void;
+}) => {
+  function onCardEdit(updatedCard: KanbanCard) {
+    const updatedCards = cards.map((card) => (card.id === updatedCard.id ? updatedCard : card));
+    onUpdate({ id, title, cards: updatedCards });
+  }
+
+  function onCardDelete(cardId: string) {
+    const updatedCards = cards.filter((card) => card.id !== cardId);
+    onUpdate({ id, title, cards: updatedCards });
+  }
+
   return (
     <Droppable key={id} droppableId={id}>
       {(provided) => (
@@ -183,7 +212,14 @@ const KanbanColumn = ({
           <p className={styles.columnTitle}>{title}</p>
           <div className={styles.list}>
             {cards.map(({ id, title }, index) => (
-              <KanbanCard key={id} id={id} index={index} title={title} />
+              <KanbanCard
+                key={id}
+                id={id}
+                index={index}
+                title={title}
+                onEdit={onCardEdit}
+                onDelete={() => onCardDelete(id)}
+              />
             ))}
             {provided.placeholder}
             {children}
@@ -194,7 +230,48 @@ const KanbanColumn = ({
   );
 };
 
-const KanbanCard = ({ id, index, title }: { id: string; index: number; title: string }) => {
+const KanbanCard = ({
+  id,
+  index,
+  title,
+  onEdit,
+  onDelete,
+}: {
+  id: string;
+  index: number;
+  title: string;
+  onEdit: (card: KanbanCard) => void;
+  onDelete: () => void;
+}) => {
+  const [editTitle, setEditTitle] = useState(title);
+  const [editMode, setEditMode] = useState(false);
+
+  function onReset() {
+    setEditTitle(title);
+    setEditMode(false);
+  }
+
+  function onEditFinished() {
+    onEdit({ id, title: editTitle });
+    onReset();
+  }
+
+  if (editMode) {
+    return (
+      <div className={styles.item}>
+        <Textarea variant="md" value={editTitle} onValue={setEditTitle} />
+        <Group>
+          <ActionIcon onClick={onEditFinished}>
+            <IconCheck size={14} />
+          </ActionIcon>
+          <ActionIcon onClick={onReset}>
+            <IconX size={14} />
+          </ActionIcon>
+        </Group>
+      </div>
+    );
+  }
+
   return (
     <Draggable key={id} draggableId={id} index={index}>
       {(provided, snapshot) => (
@@ -205,6 +282,14 @@ const KanbanCard = ({ id, index, title }: { id: string; index: number; title: st
           className={cn(styles.item, snapshot.isDragging ? styles.dragging : null)}
         >
           <p className={styles.itemText}>{title}</p>
+          <Group>
+            <ActionIcon onClick={() => setEditMode(true)}>
+              <IconPencil size={14} />
+            </ActionIcon>
+            <ActionIcon onClick={() => onDelete()}>
+              <IconTrash size={14} />
+            </ActionIcon>
+          </Group>
         </div>
       )}
     </Draggable>

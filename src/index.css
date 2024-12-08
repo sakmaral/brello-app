@@ -154,7 +154,6 @@ body {
 body {
   font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: var(--color-base-white);
 }
 
 /*
