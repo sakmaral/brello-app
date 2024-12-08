@@ -1,30 +1,21 @@
-import { PropsWithChildren, useState } from "react";
+import { type PropsWithChildren, useState } from "react";
 
-import { DragDropContext, Draggable, Droppable, OnDragEndResponder } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable, Droppable, type OnDragEndResponder } from "@hello-pangea/dnd";
 import { ActionIcon, Group } from "@mantine/core";
 import { IconCheck, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import cn from "clsx";
+import { useUnit } from "effector-react";
 
 import { Button } from "../button";
 import { customScrollStyles } from "../custom-scroll-styles";
 import { Textarea } from "../textarea";
 import styles from "./kanban.module.css";
+import { $board, type KanbanCard, type KanbanList, boardUpdate } from "./model";
 
 type KanbanBoard = KanbanList[];
 
-type KanbanList = {
-  id: string;
-  title: string;
-  cards: KanbanCard[];
-};
-
-type KanbanCard = {
-  id: string;
-  title: string;
-};
-
 export const KanbanBoard = () => {
-  const [board, setBoard] = useState(INITIAL_BOARD);
+  const [board, setBoard] = useUnit([$board, boardUpdate]);
 
   const onDragEnd: OnDragEndResponder = ({ source, destination }) => {
     if (!destination) {
@@ -89,27 +80,6 @@ export const KanbanBoard = () => {
     </section>
   );
 };
-
-const INITIAL_BOARD: KanbanList[] = [
-  {
-    id: crypto.randomUUID(),
-    title: "To Do",
-    cards: [
-      { id: crypto.randomUUID(), title: "Setup the Workplace" },
-      { id: crypto.randomUUID(), title: "Review opened issues" },
-    ],
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "In Progress",
-    cards: [{ id: crypto.randomUUID(), title: "Implement Kanban feature" }],
-  },
-  {
-    id: crypto.randomUUID(),
-    title: "Done",
-    cards: [{ id: crypto.randomUUID(), title: "Initialized project" }],
-  },
-];
 
 const moveCard = (
   board: KanbanBoard,
