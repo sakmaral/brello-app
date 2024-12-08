@@ -10,12 +10,11 @@ import { Button } from "../button";
 import { customScrollStyles } from "../custom-scroll-styles";
 import { Textarea } from "../textarea";
 import styles from "./kanban.module.css";
-import { $board, type KanbanCard, type KanbanList, boardUpdate } from "./model";
+import { $board, type KanbanBoard, type KanbanCard, type KanbanList, boardUpdate, cardCreateClicked } from "./model";
 
-type KanbanBoard = KanbanList[];
-
-export const KanbanBoard = () => {
+export function KanbanBoard() {
   const [board, setBoard] = useUnit([$board, boardUpdate]);
+  const [onCreateCard] = useUnit([cardCreateClicked]);
 
   const onDragEnd: OnDragEndResponder = ({ source, destination }) => {
     if (!destination) {
@@ -40,18 +39,6 @@ export const KanbanBoard = () => {
     }
   };
 
-  const onCreateCard = (card: KanbanCard, columnId: string) => {
-    const updatedBoard = board.map((column) => {
-      if (column.id === columnId) {
-        return { ...column, cards: [...column.cards, card] };
-      }
-
-      return column;
-    });
-
-    setBoard(updatedBoard);
-  };
-
   function onColumnUpdate(updatedList: KanbanList) {
     const updatedBoard = board.map((column) => (column.id === updatedList.id ? updatedList : column));
     setBoard(updatedBoard);
@@ -72,14 +59,14 @@ export const KanbanBoard = () => {
               cards={column.cards}
               onUpdate={onColumnUpdate}
             >
-              <KanbanCreateCard onCreate={(card) => onCreateCard(card, column.id)} />
+              <KanbanCreateCard onCreate={(card) => onCreateCard({ card, columnId: column.id })} />
             </KanbanColumn>
           ))}
         </div>
       </DragDropContext>
     </section>
   );
-};
+}
 
 const moveCard = (
   board: KanbanBoard,
