@@ -1,6 +1,6 @@
-import { ChangeEvent } from "react";
+import { type ChangeEvent } from "react";
 
-import { Textarea as BaseTextarea, TextareaProps } from "@mantine/core";
+import { Textarea as BaseTextarea, type TextareaProps } from "@mantine/core";
 import cn from "clsx";
 
 import styles from "./styles.module.css";

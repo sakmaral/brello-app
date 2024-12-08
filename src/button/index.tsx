@@ -1,4 +1,4 @@
-import { ElementProps, UnstyledButton, UnstyledButtonProps } from "@mantine/core";
+import { type ElementProps, UnstyledButton, type UnstyledButtonProps } from "@mantine/core";
 import cn from "clsx";
 
 import styles from "./styles.module.css";

@@ -10,8 +10,7 @@ import { Button } from "../button";
 import { customScrollStyles } from "../custom-scroll-styles";
 import { Textarea } from "../textarea";
 import styles from "./kanban.module.css";
-import type { KanbanCard, KanbanList } from "./model";
-import { $board, boardUpdate } from "./model";
+import { $board, type KanbanCard, type KanbanList, boardUpdate } from "./model";
 
 type KanbanBoard = KanbanList[];
 
