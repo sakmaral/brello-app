@@ -13,6 +13,8 @@ export type KanbanCard = {
   title: string;
 };
 
+export type KanbanNewCard = Pick<KanbanCard, "title">;
+
 const INITIAL_BOARD: KanbanBoard = [
   {
     id: crypto.randomUUID(),
@@ -35,7 +37,7 @@ const INITIAL_BOARD: KanbanBoard = [
 ];
 
 export const boardUpdate = createEvent<KanbanBoard>();
-export const cardCreateClicked = createEvent<{ card: KanbanCard; columnId: string }>();
+export const cardCreateClicked = createEvent<{ card: KanbanNewCard; columnId: string }>();
 export const $board = createStore<KanbanBoard>(INITIAL_BOARD);
 
 $board.on(boardUpdate, (_, board) => board);
@@ -43,7 +45,8 @@ $board.on(boardUpdate, (_, board) => board);
 $board.on(cardCreateClicked, (board, { card, columnId }) => {
   const updatedBoard = board.map((column) => {
     if (column.id === columnId) {
-      return { ...column, cards: [...column.cards, card] };
+      const newCard = { ...card, id: crypto.randomUUID() };
+      return { ...column, cards: [...column.cards, newCard] };
     }
 
     return column;

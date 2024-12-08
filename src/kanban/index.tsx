@@ -14,7 +14,6 @@ import { $board, type KanbanBoard, type KanbanCard, type KanbanList, boardUpdate
 
 export function KanbanBoard() {
   const [board, setBoard] = useUnit([$board, boardUpdate]);
-  const [onCreateCard] = useUnit([cardCreateClicked]);
 
   const onDragEnd: OnDragEndResponder = ({ source, destination }) => {
     if (!destination) {
@@ -59,7 +58,7 @@ export function KanbanBoard() {
               cards={column.cards}
               onUpdate={onColumnUpdate}
             >
-              <KanbanCreateCard onCreate={(card) => onCreateCard({ card, columnId: column.id })} />
+              <KanbanCreateCard columnId={column.id} />
             </KanbanColumn>
           ))}
         </div>
@@ -223,8 +222,9 @@ const KanbanCard = ({
   );
 };
 
-const KanbanCreateCard = ({ onCreate }: { onCreate: (card: KanbanCard) => void }) => {
+const KanbanCreateCard = ({ columnId }: { columnId: string }) => {
   const [title, setTitle] = useState("");
+  const [onCreateCard] = useUnit([cardCreateClicked]);
 
   function onReset() {
     setTitle("");
@@ -232,7 +232,7 @@ const KanbanCreateCard = ({ onCreate }: { onCreate: (card: KanbanCard) => void }
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    onCreate({ id: crypto.randomUUID(), title });
+    onCreateCard({ card: { title }, columnId });
     onReset();
   }
 
