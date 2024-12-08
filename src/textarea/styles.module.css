@@ -1,11 +1,11 @@
 .root {
   display: block;
   width: 100%;
-  border: 1px solid var(--color-gray-300);
+  border: 1px solid light-dark(var(--color-gray-200, #eaecf0), var(--color-gray-700));
   border-radius: 8px;
-  background-color: var(--color-base-white);
+  background: light-dark(var(--color-base-white, #fff), var(--color-gray-800));
   box-shadow: var(--shadow-xs);
-  color: var(--color-gray-900);
+  color: var(--color-gray-25);
   font: var(--font-text-md-regular);
   min-height: 120px;
   resize: none;
@@ -21,6 +21,7 @@
     var(--shadow-xs),
     0 0 0 4px var(--color-primary-100);
   outline: none;
+  color: var(--color-gray-500);
 }
 
 .root:disabled {
@@ -50,7 +51,7 @@
 .hint {
   display: block;
   margin-top: 6px;
-  color: var(--color-gray-500);
+  color: light-dark(var(--color-gray-500), var(--color-gray-300));
   font: var(--font-text-sm-regular);
 }
 

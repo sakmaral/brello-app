@@ -1,0 +1,18 @@
+.header {
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-base-white);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
