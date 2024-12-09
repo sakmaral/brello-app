@@ -10,19 +10,10 @@ import { Button } from "../button";
 import { customScrollStyles } from "../custom-scroll-styles";
 import { Textarea } from "../textarea";
 import styles from "./kanban.module.css";
-import {
-  $board,
-  type KanbanBoard,
-  type KanbanCard,
-  type KanbanList,
-  boardUpdate,
-  cardCreateClicked,
-  cardDeleteClicked,
-  cardEditClicked,
-} from "./model";
+import { $board, type KanbanCard, cardCreateClicked, cardDeleteClicked, cardEditClicked, cardMoved } from "./model";
 
 export function KanbanBoard() {
-  const [board, setBoard] = useUnit([$board, boardUpdate]);
+  const [board, cardMove] = useUnit([$board, cardMoved]);
 
   const onDragEnd: OnDragEndResponder = ({ source, destination }) => {
     if (!destination) {
@@ -30,21 +21,12 @@ export function KanbanBoard() {
       return;
     }
 
-    const sourceId = source.droppableId;
-    const destinationId = destination.droppableId;
+    const sourceColumnId = source.droppableId;
+    const destinationColumnId = destination.droppableId;
+    const sourceIndex = source.index;
+    const destinationIndex = destination.index;
 
-    const insideTheSameColumn = sourceId === destinationId;
-    if (insideTheSameColumn) {
-      const column = board.find((column) => column.id === sourceId);
-      if (column) {
-        const reorderedList = listReorder(column, source.index, destination.index);
-        const updatedBoard = board.map((item) => (item.id === sourceId ? reorderedList : item));
-        setBoard(updatedBoard);
-      }
-    } else {
-      const updatedBoard = moveCard(board, sourceId, destinationId, source.index, destination.index);
-      setBoard(updatedBoard);
-    }
+    cardMove({ sourceColumnId, destinationColumnId, sourceIndex, destinationIndex });
   };
 
   return (
@@ -64,48 +46,6 @@ export function KanbanBoard() {
     </section>
   );
 }
-
-const moveCard = (
-  board: KanbanBoard,
-  sourceColumnId: string,
-  destinationColumnId: string,
-  fromIndex: number,
-  toIndex: number,
-): KanbanBoard => {
-  const sourceColumn = board.find((column) => column.id === sourceColumnId);
-  const destinationColumn = board.find((column) => column.id === destinationColumnId);
-
-  if (!sourceColumn || !destinationColumn) {
-    return board;
-  }
-  const card = sourceColumn.cards[fromIndex];
-
-  const updatedSourceColumn = { ...sourceColumn, cards: sourceColumn.cards.filter((_, index) => index !== fromIndex) };
-  const updatedDestinationColumn = {
-    ...destinationColumn,
-    cards: [...destinationColumn.cards.slice(0, toIndex), { ...card }, ...destinationColumn.cards.slice(toIndex)],
-  };
-
-  return board.map((column) => {
-    if (column.id === sourceColumnId) {
-      return updatedSourceColumn;
-    }
-
-    if (column.id === destinationColumnId) {
-      return updatedDestinationColumn;
-    }
-
-    return column;
-  });
-};
-
-const listReorder = (list: KanbanList, startIndex: number, endIndex: number): KanbanList => {
-  const cards = Array.from(list.cards);
-  const [removed] = cards.splice(startIndex, 1);
-  cards.splice(endIndex, 0, removed);
-
-  return { ...list, cards };
-};
 
 const KanbanColumn = ({
   id,
