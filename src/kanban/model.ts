@@ -13,7 +13,7 @@ export type KanbanCard = {
   title: string;
 };
 
-export type KanbanNewCard = Pick<KanbanCard, "title">;
+export type KanbanCardForm = Pick<KanbanCard, "title">;
 
 const INITIAL_BOARD: KanbanBoard = [
   {
@@ -37,10 +37,13 @@ const INITIAL_BOARD: KanbanBoard = [
 ];
 
 export const boardUpdate = createEvent<KanbanBoard>();
-export const cardCreateClicked = createEvent<{ card: KanbanNewCard; columnId: string }>();
+export const cardCreateClicked = createEvent<{ card: KanbanCardForm; columnId: string }>();
+export const cardEditClicked = createEvent<{ card: KanbanCardForm; columnId: string; cardId: string }>();
+export const cardDeleteClicked = createEvent<{ columnId: string; cardId: string }>();
+
 export const $board = createStore<KanbanBoard>(INITIAL_BOARD);
 
-$board.on(boardUpdate, (_, board) => board);
+// $board.on(boardUpdate, (_, board) => board);
 
 $board.on(cardCreateClicked, (board, { card, columnId }) => {
   const updatedBoard = board.map((column) => {
@@ -54,3 +57,33 @@ $board.on(cardCreateClicked, (board, { card, columnId }) => {
 
   return updatedBoard;
 });
+
+$board.on(cardEditClicked, (board, { card, columnId, cardId }) => {
+  const updatedBoard = board.map((column) => {
+    if (column.id === columnId) {
+      const updatedCards = column.cards.map((existingCard) =>
+        existingCard.id === cardId ? { ...existingCard, ...card } : existingCard,
+      );
+      return { ...column, cards: updatedCards };
+    }
+
+    return column;
+  });
+
+  return updatedBoard;
+});
+
+$board.on(cardDeleteClicked, (board, { columnId, cardId }) => {
+  const updatedBoard = board.map((column) => {
+    if (column.id === columnId) {
+      const updatedCards = column.cards.filter((card) => card.id !== cardId);
+      return { ...column, cards: updatedCards };
+    }
+
+    return column;
+  });
+
+  return updatedBoard;
+});
+
+// debug($board, cardEditClicked);

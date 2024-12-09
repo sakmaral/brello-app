@@ -10,7 +10,16 @@ import { Button } from "../button";
 import { customScrollStyles } from "../custom-scroll-styles";
 import { Textarea } from "../textarea";
 import styles from "./kanban.module.css";
-import { $board, type KanbanBoard, type KanbanCard, type KanbanList, boardUpdate, cardCreateClicked } from "./model";
+import {
+  $board,
+  type KanbanBoard,
+  type KanbanCard,
+  type KanbanList,
+  boardUpdate,
+  cardCreateClicked,
+  cardDeleteClicked,
+  cardEditClicked,
+} from "./model";
 
 export function KanbanBoard() {
   const [board, setBoard] = useUnit([$board, boardUpdate]);
@@ -38,11 +47,6 @@ export function KanbanBoard() {
     }
   };
 
-  function onColumnUpdate(updatedList: KanbanList) {
-    const updatedBoard = board.map((column) => (column.id === updatedList.id ? updatedList : column));
-    setBoard(updatedBoard);
-  }
-
   return (
     <section className={cn(styles.section)}>
       <header className={styles.headerSection}>
@@ -51,13 +55,7 @@ export function KanbanBoard() {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className={cn(styles.board, customScrollStyles)}>
           {board.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              id={column.id}
-              title={column.title}
-              cards={column.cards}
-              onUpdate={onColumnUpdate}
-            >
+            <KanbanColumn key={column.id} id={column.id} title={column.title} cards={column.cards}>
               <KanbanCreateCard columnId={column.id} />
             </KanbanColumn>
           ))}
@@ -114,38 +112,19 @@ const KanbanColumn = ({
   title,
   cards,
   children,
-  onUpdate,
 }: PropsWithChildren & {
   id: string;
   title: string;
   cards: KanbanCard[];
-  onUpdate: (updatedList: KanbanList) => void;
 }) => {
-  function onCardEdit(updatedCard: KanbanCard) {
-    const updatedCards = cards.map((card) => (card.id === updatedCard.id ? updatedCard : card));
-    onUpdate({ id, title, cards: updatedCards });
-  }
-
-  function onCardDelete(cardId: string) {
-    const updatedCards = cards.filter((card) => card.id !== cardId);
-    onUpdate({ id, title, cards: updatedCards });
-  }
-
   return (
     <Droppable key={id} droppableId={id}>
       {(provided) => (
         <div ref={provided.innerRef} className={styles.column} {...provided.droppableProps}>
           <p className={styles.columnTitle}>{title}</p>
           <div className={styles.list}>
-            {cards.map(({ id, title }, index) => (
-              <KanbanCard
-                key={id}
-                id={id}
-                index={index}
-                title={title}
-                onEdit={onCardEdit}
-                onDelete={() => onCardDelete(id)}
-              />
+            {cards.map((card, index) => (
+              <KanbanCard key={card.id} id={card.id} index={index} title={card.title} columnId={id} />
             ))}
             {provided.placeholder}
             {children}
@@ -156,21 +135,11 @@ const KanbanColumn = ({
   );
 };
 
-const KanbanCard = ({
-  id,
-  index,
-  title,
-  onEdit,
-  onDelete,
-}: {
-  id: string;
-  index: number;
-  title: string;
-  onEdit: (card: KanbanCard) => void;
-  onDelete: () => void;
-}) => {
+const KanbanCard = ({ id, index, title, columnId }: { id: string; index: number; title: string; columnId: string }) => {
   const [editTitle, setEditTitle] = useState(title);
   const [editMode, setEditMode] = useState(false);
+
+  const [onEdit, onDelete] = useUnit([cardEditClicked, cardDeleteClicked]);
 
   function onReset() {
     setEditTitle(title);
@@ -178,7 +147,7 @@ const KanbanCard = ({
   }
 
   function onEditFinished() {
-    onEdit({ id, title: editTitle });
+    onEdit({ cardId: id, card: { title: editTitle }, columnId });
     onReset();
   }
 
@@ -212,7 +181,7 @@ const KanbanCard = ({
             <ActionIcon onClick={() => setEditMode(true)}>
               <IconPencil size={14} />
             </ActionIcon>
-            <ActionIcon onClick={() => onDelete()}>
+            <ActionIcon onClick={() => onDelete({ cardId: id, columnId })}>
               <IconTrash size={14} />
             </ActionIcon>
           </Group>
