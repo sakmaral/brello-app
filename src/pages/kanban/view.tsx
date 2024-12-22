@@ -1,19 +1,33 @@
 import { type PropsWithChildren, useState } from "react";
 
+import { Button } from "@/button";
+import { customScrollStyles } from "@/custom-scroll-styles";
+import { Textarea } from "@/textarea";
 import { DragDropContext, Draggable, Droppable, type OnDragEndResponder } from "@hello-pangea/dnd";
 import { ActionIcon, Group } from "@mantine/core";
 import { IconCheck, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import cn from "clsx";
-import { useUnit } from "effector-react";
+import { useGate, useUnit } from "effector-react";
 
-import { Button } from "../button";
-import { customScrollStyles } from "../custom-scroll-styles";
-import { Textarea } from "../textarea";
 import styles from "./kanban.module.css";
-import { $board, type KanbanCard, cardCreateClicked, cardDeleteClicked, cardEditClicked, cardMoved } from "./model";
+import {
+  $board,
+  type KanbanCard,
+  PageGate,
+  cardCreateClicked,
+  cardDeleteClicked,
+  cardEditClicked,
+  cardMoved,
+} from "./model";
 
 export function KanbanBoard() {
   const [board, cardMove] = useUnit([$board, cardMoved]);
+
+  useGate(PageGate);
+
+  // useEffect(() => {
+  //   console.log("board", board);
+  // }, [board]);
 
   const onDragEnd: OnDragEndResponder = ({ source, destination }) => {
     if (!destination) {
