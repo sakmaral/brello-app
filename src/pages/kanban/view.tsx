@@ -4,14 +4,15 @@ import { Button } from "@/button";
 import { customScrollStyles } from "@/custom-scroll-styles";
 import { Textarea } from "@/textarea";
 import { DragDropContext, Draggable, Droppable, type OnDragEndResponder } from "@hello-pangea/dnd";
-import { ActionIcon, Group } from "@mantine/core";
+import { ActionIcon, Group, Loader } from "@mantine/core";
 import { IconCheck, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import cn from "clsx";
-import { useGate, useUnit } from "effector-react";
+import { useGate, useStoreMap, useUnit } from "effector-react";
 
 import styles from "./kanban.module.css";
 import {
   $board,
+  $cardPendingMap,
   type KanbanCard,
   PageGate,
   cardCreateClicked,
@@ -91,6 +92,12 @@ const KanbanCard = ({ id, index, title, columnId }: { id: string; index: number;
 
   const [onEdit, onDelete] = useUnit([cardEditClicked, cardDeleteClicked]);
 
+  const disabled = useStoreMap({
+    store: $cardPendingMap,
+    keys: [id],
+    fn: (pendingMap) => pendingMap[id] ?? false,
+  });
+
   function onReset() {
     setEditTitle(title);
     setEditMode(false);
@@ -124,10 +131,13 @@ const KanbanCard = ({ id, index, title, columnId }: { id: string; index: number;
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={cn(styles.item, snapshot.isDragging ? styles.dragging : null)}
+          className={cn(styles.item, disabled && styles.disabled, snapshot.isDragging ? styles.dragging : null)}
         >
           <p className={styles.itemText}>{title}</p>
-          <Group>
+          <Group hidden={!disabled}>
+            <Loader size="sm" />
+          </Group>
+          <Group hidden={disabled}>
             <ActionIcon onClick={() => setEditMode(true)}>
               <IconPencil size={14} />
             </ActionIcon>

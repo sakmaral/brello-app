@@ -3,19 +3,17 @@ import { createEffect, createEvent, createStore, sample } from "effector";
 import { createGate } from "effector-react";
 
 export type KanbanBoard = KanbanList[];
-
 export type KanbanList = {
   id: string;
   title: string;
   cards: KanbanCard[];
 };
-
 export type KanbanCard = {
   id: string;
   title: string;
 };
-
 export type KanbanCardForm = Pick<KanbanCard, "title">;
+export type CardId = KanbanCard["id"];
 
 export const PageGate = createGate();
 
@@ -35,6 +33,7 @@ const cardMovedToAnotherColumn = cardMoved.filter({
 });
 
 export const $board = createStore<KanbanBoard>([]);
+export const $cardPendingMap = createStore<Record<CardId, boolean>>({});
 
 /** Load lists and cards from db */
 
@@ -110,6 +109,17 @@ sample({
   target: cardSaveFx,
 });
 
+$cardPendingMap.on(cardSaveFx, (pendingMap, { card }) => ({
+  ...pendingMap,
+  [card.id]: true,
+}));
+
+$cardPendingMap.on(cardSaveFx.finally, (pendingMap, { params }) => {
+  const updatingPendingMap = { ...pendingMap };
+  delete updatingPendingMap[params.card.id];
+  return updatingPendingMap;
+});
+
 const cardSavedSuccess = createEvent<{ originalId: string; card: KanbanCard; columnId: string }>();
 const cardSavedError = createEvent<{ originalId: string; columnId: string }>();
 
@@ -174,6 +184,17 @@ const cardDeleteFx = createEffect(async ({ cardId }: { cardId: string }) => {
 });
 
 sample({ clock: cardDeleteClicked, target: cardDeleteFx });
+
+$cardPendingMap.on(cardDeleteFx, (pendingMap, { cardId }) => ({
+  ...pendingMap,
+  [cardId]: true,
+}));
+
+$cardPendingMap.on(cardDeleteFx.finally, (pendingMap, { params }) => {
+  const updatingPendingMap = { ...pendingMap };
+  delete updatingPendingMap[params.cardId];
+  return updatingPendingMap;
+});
 
 $board.on(cardDeleteFx.done, (board, { params: { cardId } }) => {
   const updatedBoard = board.map((column) => {

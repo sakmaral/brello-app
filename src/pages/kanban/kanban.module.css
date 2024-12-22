@@ -68,6 +68,15 @@
   }
 }
 
+.item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.item.disabled :global(.mantine-Loader-root) {
+  --loader-color: var(--color-primary-600);
+}
+
 .item.dragging {
   box-shadow: 0 2px 8px 0 rgba(16, 24, 40, 0.05);
 }
