@@ -46,7 +46,6 @@ const boardsLoadFx = createEffect(async () => {
     cards: cards.filter((card) => card.list_id === list.id),
   }));
 
-  console.log("Updated lists", updatedLists);
   return updatedLists;
 });
 
@@ -76,6 +75,8 @@ sample({
 });
 
 $board.on(boardsInitializeFx.doneData, (_, board) => board.map((list) => ({ ...list, cards: [] })));
+
+/** Create new card */
 
 export const cardCreateClicked = createEvent<{ card: KanbanCardForm; columnId: string }>();
 export const cardCreated = createEvent<{ card: KanbanCard; columnId: string }>();
@@ -166,14 +167,23 @@ $board.on(cardEditClicked, (board, { card, columnId, cardId }) => {
   return updatedBoard;
 });
 
-$board.on(cardDeleteClicked, (board, { columnId, cardId }) => {
+/** Delete card */
+
+const cardDeleteFx = createEffect(async ({ cardId }: { cardId: string }) => {
+  await api.kanban.cardDeleteFx({ cardId });
+});
+
+sample({ clock: cardDeleteClicked, target: cardDeleteFx });
+
+$board.on(cardDeleteFx.done, (board, { params: { cardId } }) => {
   const updatedBoard = board.map((column) => {
-    if (column.id === columnId) {
-      const updatedCards = column.cards.filter((card) => card.id !== cardId);
-      return { ...column, cards: updatedCards };
+    const updatedCards = column.cards.filter((card) => card.id !== cardId);
+
+    if (updatedCards.length === column.cards.length) {
+      return column;
     }
 
-    return column;
+    return { ...column, cards: updatedCards };
   });
 
   return updatedBoard;

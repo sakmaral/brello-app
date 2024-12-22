@@ -25,10 +25,6 @@ export function KanbanBoard() {
 
   useGate(PageGate);
 
-  // useEffect(() => {
-  //   console.log("board", board);
-  // }, [board]);
-
   const onDragEnd: OnDragEndResponder = ({ source, destination }) => {
     if (!destination) {
       // Dropped outside of a column
