@@ -1,6 +1,7 @@
+import { KanbanBoard } from "@/pages/kanban/view";
+
 import styles from "./application.module.css";
 import { Header } from "./header";
-import { KanbanBoard } from "./kanban";
 
 export const Application = () => {
   return (
