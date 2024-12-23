@@ -10,6 +10,7 @@ export type ListCreate = Omit<List, "id" | "created_at">;
 export type Card = Tables<"cards">;
 export type CardCreate = Omit<Card, "id" | "created_at">;
 export type CardDelete = { cardId: string };
+export type CardUpdate = Pick<Card, "id"> & Partial<Omit<Card, "id" | "created_at">>;
 
 export const listsLoadFx = createEffect<void, List[], PostgrestError>(async () => {
   const { data } = await client.from("lists").select("*").throwOnError();
@@ -34,4 +35,10 @@ export const cardCreateFx = createEffect<CardCreate, Card | null, PostgrestError
 export const cardDeleteFx = createEffect<CardDelete, null, PostgrestError>(async ({ cardId }) => {
   await client.from("cards").delete().eq("id", cardId).throwOnError();
   return null;
+});
+
+export const cardUpdateFx = createEffect<CardUpdate, Card | null, PostgrestError>(async (card) => {
+  const { data } = await client.from("cards").update(card).eq("id", card.id).select("*").single().throwOnError();
+
+  return data ?? null;
 });

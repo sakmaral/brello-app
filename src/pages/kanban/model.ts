@@ -1,4 +1,5 @@
 import { api } from "@/shared/api";
+import { type CardUpdate } from "@/shared/api/kanban.api";
 import { createEffect, createEvent, createStore, sample } from "effector";
 import { createGate } from "effector-react";
 
@@ -162,11 +163,26 @@ $board.on(cardSavedError, (board, { originalId, columnId }) => {
   return updatedBoard;
 });
 
-$board.on(cardEditClicked, (board, { card, columnId, cardId }) => {
+/** Edit card */
+const editCardFx = createEffect(
+  async ({ cardId, card }: { cardId: string; card: Partial<CardUpdate> }) =>
+    await api.kanban.cardUpdateFx({ ...card, id: cardId }),
+);
+
+sample({ clock: cardEditClicked, target: editCardFx });
+
+$cardPendingMap.on(editCardFx, (pendingMap, { cardId }) => ({
+  ...pendingMap,
+  [cardId]: true,
+}));
+
+$board.on(editCardFx.done, (board, { params, result: card }) => {
+  if (!card) return board;
+
   const updatedBoard = board.map((column) => {
-    if (column.id === columnId) {
+    if (column.id === card.list_id) {
       const updatedCards = column.cards.map((existingCard) =>
-        existingCard.id === cardId ? { ...existingCard, ...card } : existingCard,
+        existingCard.id === params.cardId ? { ...existingCard, ...card } : existingCard,
       );
       return { ...column, cards: updatedCards };
     }
@@ -175,6 +191,12 @@ $board.on(cardEditClicked, (board, { card, columnId, cardId }) => {
   });
 
   return updatedBoard;
+});
+
+$cardPendingMap.on(editCardFx.finally, (pendingMap, { params }) => {
+  const updatingPendingMap = { ...pendingMap };
+  delete updatingPendingMap[params.cardId];
+  return updatingPendingMap;
 });
 
 /** Delete card */
