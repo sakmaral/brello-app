@@ -1,10 +1,11 @@
-import { type PropsWithChildren, useState } from "react";
+import { type FC, type PropsWithChildren, useState } from "react";
 
 import { Button } from "@/button";
 import { customScrollStyles } from "@/custom-scroll-styles";
 import { Textarea } from "@/textarea";
 import { DragDropContext, Draggable, Droppable, type OnDragEndResponder } from "@hello-pangea/dnd";
 import { ActionIcon, Group, Loader } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { IconCheck, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import cn from "clsx";
 import { useGate, useStoreMap, useUnit } from "effector-react";
@@ -87,10 +88,9 @@ const KanbanColumn = ({
 };
 
 const KanbanCard = ({ id, index, title, columnId }: { id: string; index: number; title: string; columnId: string }) => {
-  const [editTitle, setEditTitle] = useState(title);
-  const [editMode, setEditMode] = useState(false);
+  const onDelete = useUnit(cardDeleteClicked);
 
-  const [onEdit, onDelete] = useUnit([cardEditClicked, cardDeleteClicked]);
+  const [editMode, editHandlers] = useDisclosure(false);
 
   const disabled = useStoreMap({
     store: $cardPendingMap,
@@ -98,30 +98,8 @@ const KanbanCard = ({ id, index, title, columnId }: { id: string; index: number;
     fn: (pendingMap) => pendingMap[id] ?? false,
   });
 
-  function onReset() {
-    setEditTitle(title);
-    setEditMode(false);
-  }
-
-  function onEditFinished() {
-    onEdit({ cardId: id, card: { title: editTitle }, columnId });
-    onReset();
-  }
-
   if (editMode) {
-    return (
-      <div className={styles.item}>
-        <Textarea variant="md" value={editTitle} onValue={setEditTitle} />
-        <Group>
-          <ActionIcon onClick={onEditFinished}>
-            <IconCheck size={14} />
-          </ActionIcon>
-          <ActionIcon onClick={onReset}>
-            <IconX size={14} />
-          </ActionIcon>
-        </Group>
-      </div>
-    );
+    return <KanbanEditCard cardId={id} title={title} columnId={columnId} onFinished={editHandlers.close} />;
   }
 
   return (
@@ -138,7 +116,7 @@ const KanbanCard = ({ id, index, title, columnId }: { id: string; index: number;
             <Loader size="sm" />
           </Group>
           <Group hidden={disabled}>
-            <ActionIcon onClick={() => setEditMode(true)}>
+            <ActionIcon onClick={editHandlers.open}>
               <IconPencil size={14} />
             </ActionIcon>
             <ActionIcon onClick={() => onDelete({ cardId: id, columnId })}>
@@ -148,6 +126,38 @@ const KanbanCard = ({ id, index, title, columnId }: { id: string; index: number;
         </div>
       )}
     </Draggable>
+  );
+};
+
+interface KanbanEditCardProps {
+  cardId: string;
+  title: string;
+  columnId: string;
+  onFinished: () => void;
+}
+
+const KanbanEditCard: FC<KanbanEditCardProps> = ({ title, cardId, columnId, onFinished }) => {
+  const [editTitle, setEditTitle] = useState(title);
+
+  const onEdit = useUnit(cardEditClicked);
+
+  function onEditFinished() {
+    onEdit({ cardId, card: { title: editTitle }, columnId });
+    onFinished();
+  }
+
+  return (
+    <div className={styles.item}>
+      <Textarea variant="md" value={editTitle} onValue={setEditTitle} />
+      <Group>
+        <ActionIcon onClick={onEditFinished}>
+          <IconCheck size={14} />
+        </ActionIcon>
+        <ActionIcon onClick={onFinished}>
+          <IconX size={14} />
+        </ActionIcon>
+      </Group>
+    </div>
   );
 };
 
