@@ -22,23 +22,24 @@ import {
   cardMoved,
 } from "./model";
 
-export function KanbanBoard() {
+export function KanbanView() {
   const [board, cardMove] = useUnit([$board, cardMoved]);
 
   useGate(PageGate);
 
-  const onDragEnd: OnDragEndResponder = ({ source, destination }) => {
+  const onDragEnd: OnDragEndResponder = ({ source, destination, draggableId }) => {
     if (!destination) {
       // Dropped outside of a column
       return;
     }
 
+    const cardId = draggableId;
     const sourceColumnId = source.droppableId;
     const destinationColumnId = destination.droppableId;
     const sourceIndex = source.index;
     const destinationIndex = destination.index;
 
-    cardMove({ sourceColumnId, destinationColumnId, sourceIndex, destinationIndex });
+    cardMove({ sourceColumnId, destinationColumnId, sourceIndex, destinationIndex, cardId });
   };
 
   return (

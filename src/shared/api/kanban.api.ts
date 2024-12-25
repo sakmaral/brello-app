@@ -13,7 +13,7 @@ export type CardDelete = { cardId: string };
 export type CardUpdate = Pick<Card, "id"> & Partial<Omit<Card, "id" | "created_at">>;
 
 export const listsLoadFx = createEffect<void, List[], PostgrestError>(async () => {
-  const { data } = await client.from("lists").select("*").throwOnError();
+  const { data } = await client.from("lists").select("*").order("sort_order", { ascending: true }).throwOnError();
   return data ?? [];
 });
 
@@ -23,7 +23,7 @@ export const listCreateFx = createEffect<ListCreate, List | null, PostgrestError
 });
 
 export const cardsLoadFx = createEffect<void, Card[], PostgrestError>(async () => {
-  const { data } = await client.from("cards").select("*").throwOnError();
+  const { data } = await client.from("cards").select("*").order("sort_order", { ascending: true }).throwOnError();
   return data ?? [];
 });
 

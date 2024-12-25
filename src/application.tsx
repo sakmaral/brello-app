@@ -1,4 +1,4 @@
-import { KanbanBoard } from "@/pages/kanban/view";
+import { KanbanView } from "@/pages/kanban/@page";
 
 import "@mantine/core/styles/ActionIcon.css";
 import "@mantine/core/styles/Loader.css";
@@ -11,7 +11,7 @@ export const Application = () => {
     <>
       <Header />
       <main className={styles.main}>
-        <KanbanBoard />
+        <KanbanView />
       </main>
     </>
   );
