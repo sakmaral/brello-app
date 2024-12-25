@@ -238,12 +238,6 @@ $board.on(cardDeleteFx.done, (board, { params: { cardId } }) => {
 
 /** Change status of the card, move to another list */
 
-sample({
-  clock: cardMovedToAnotherColumn,
-  fn: ({ destinationColumnId, cardId }) => ({ cardId, card: { list_id: destinationColumnId } }),
-  target: cardEditFx,
-});
-
 $board.on(cardMovedToAnotherColumn, (board, { sourceColumnId, destinationColumnId, sourceIndex, destinationIndex }) => {
   const updatedBoard = moveCard(board, sourceColumnId, destinationColumnId, sourceIndex, destinationIndex);
   return updatedBoard;
